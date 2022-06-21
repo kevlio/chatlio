@@ -55,27 +55,26 @@ function App() {
   const [randomColor, setRandomColor] = useState("");
   const [avatar, setAvatar] = useState("");
 
-  const [currentRoom, setCurrentRoom] = useState("");
+  const [room, setRoom] = useState("");
   const [rooms, setRooms] = useState([]);
 
-  const scrollRef = useRef(null);
+  const [roomAdd, setRoomAdd] = useState("");
 
-  console.log(currentRoom);
-  console.log(rooms);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     scrollRef.current.scrollIntoView({
       behavior: "smooth",
-      // block: "end",
-      // inline: "nearest",
     });
   }, [messages]);
 
   useEffect(() => {
     socket = io("http://localhost:4000");
 
-    socket.on("connection", () => {
+    socket.on("connection", (data) => {
       console.log("Connected to server");
+      console.log(data);
+      setRooms(data);
     });
 
     socket.on("joined_room", (data) => {
@@ -89,7 +88,8 @@ function App() {
     });
 
     socket.on("current_room", (data) => {
-      setCurrentRoom(data.name);
+      console.log(data);
+      setMessages(data[0].messages);
     });
 
     socket.on("joined_room", (data) => {
@@ -115,34 +115,9 @@ function App() {
       );
     });
 
-    // socket.on(
-    //   "chatMessage",
-    //   ({ message, clientID, randomColor, avatar, currentRoom }) => {
-    //     console.log(message, clientID, randomColor, avatar, currentRoom);
-    //     // setMessages((prevMessage) => {
-    //     //   return [
-    //     //     ...prevMessage,
-    //     //     { message, clientID, randomColor, avatar, currentRoom },
-    //     //   ];
-    //     // });
-    //   }
-    // );
-
     socket.on("chatMessage2", (data) => {
       console.log("get chat");
-      console.log(data);
-      setMessages((prevMessage) => {
-        return [
-          ...prevMessage,
-          {
-            message: data.message,
-            clientID: data.clientID,
-            randomColor: data.randomColor,
-            avatar: data.avatar,
-            currentRoom: data.currentRoom,
-          },
-        ];
-      });
+      setMessages(data.messages);
     });
 
     socket.on("disconnect", () => {
@@ -150,35 +125,30 @@ function App() {
       setMessages([]);
     });
 
-    // socket.on("new_client", (data) => {
-    //   console.log(data);
-    // });
-
     return () => socket.off();
   }, []);
 
   console.log(messages);
-  console.log(currentRoom);
+  console.log(roomAdd);
   console.log(rooms);
+  console.log(room);
 
   const handleMessage = (message) => {
+    console.log(room);
     socket.emit("chatMessage", {
       message,
       clientID,
       randomColor,
       avatar,
-      currentRoom,
+      room,
     });
   };
 
   const addRoom = (roomName) => {
-    console.log("addRoom");
-    console.log(roomName);
     socket.emit("add_room", roomName);
   };
 
   const joinRoom = (roomName) => {
-    console.log(roomName);
     socket.emit("join_room", roomName);
   };
 
@@ -235,6 +205,8 @@ function App() {
             borderRadius={10}
             p={2}
             minH="100%"
+            maxH="400px"
+            overflow="hidden"
           >
             <Flex flexDir="column" alignItems="flex-start">
               <Flex flexDir="column" p={1} m={1}>
@@ -265,36 +237,40 @@ function App() {
                     <InputRightElement
                       children={<IoAddOutline />}
                       onClick={() => {
-                        addRoom(currentRoom);
-                        // setRoom("");
+                        addRoom(room);
+                        setRoomAdd("");
                       }}
                     />
                     <Input
                       variant="outline"
                       maxW="150px"
-                      // bg="gray.100"
-                      // color="blackAlpha.900"
-                      value={currentRoom}
+                      value={roomAdd}
                       fontSize="lg"
-                      onChange={(e) => setCurrentRoom(e.target.value)}
+                      onChange={(e) => {
+                        setRoomAdd(e.target.value);
+                        setRoom(e.target.value);
+                      }}
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
-                          joinRoom(currentRoom);
-                          // setRoom("");
+                          addRoom(room);
+                          setRoomAdd("");
                         }
                       }}
                     />
                   </InputGroup>
-                  {rooms &&
-                    rooms.reverse().map((room) => (
-                      <Text
-                        bgColor={currentRoom === room.name && "green"}
-                        // onClick={() => joinRoom(room.name)}
-                      >
-                        {room.name}
-                      </Text>
-                    ))}
                 </Collapse>
+                {rooms &&
+                  rooms.reverse().map((roomItem) => (
+                    <Text
+                      bgColor={room === roomItem.name && "green"}
+                      onClick={() => {
+                        joinRoom(roomItem.name);
+                        setRoom(roomItem.name);
+                      }}
+                    >
+                      {roomItem.name}
+                    </Text>
+                  ))}
               </Flex>
               <Flex flexDir="column" p={1} m={1}>
                 <Button
@@ -308,10 +284,14 @@ function App() {
                 >
                   Users
                 </Button>
-                {/* {clients &&
+                {clients &&
                   clients
                     .reverse()
-                    .map((client) => <Text>{client.slice(0, 5)}</Text>)} */}
+                    .map((client) => (
+                      <Text bgColor={clientID === client && "green"}>
+                        {client.slice(0, 5)}
+                      </Text>
+                    ))}
               </Flex>
             </Flex>
           </GridItem>
@@ -322,9 +302,6 @@ function App() {
             borderRight="2px solid black"
             borderRadius={10}
             p={2}
-
-            // my={2}
-            // minH="100%"
           >
             <Flex flexDir="column">
               <Flex
@@ -352,7 +329,7 @@ function App() {
                       p={1}
                       overflowWrap="break-word"
                     >
-                      <Text>{message.currentRoom}</Text>
+                      <Text>{message.roomAdd}</Text>
                       <Flex flexDir="column">
                         <Text fontSize="10px">{message.clientID}</Text>
                         <Text color="white">{message.message}</Text>

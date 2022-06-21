@@ -14,8 +14,12 @@ let clients = [];
 let rooms = [];
 
 io.on("connection", (socket) => {
+  // Restart
+  // clients = [];
+  // rooms = [];
+
   // Emit when connected (single client)
-  socket.emit("connection");
+  socket.emit("connection", rooms);
   // Client with ID has connected
   console.log(`Socket with ID: ${socket.id} has connected`);
   //   Welcome message (single client)
@@ -27,7 +31,6 @@ io.on("connection", (socket) => {
 
   // CLIENT LOGIC
   // Send ID for current Client
-
   console.log(clients);
 
   // Emit client ID (single client)
@@ -60,12 +63,21 @@ io.on("connection", (socket) => {
     // Gå med i ett rum
     socket.join(data);
 
+    const joinedRoom = rooms.filter((room) => {
+      return room.name === data;
+    });
+    console.log("joined room");
+    console.log(joinedRoom);
+
+    socket.emit("current_room", joinedRoom);
+
     // Berättar för alla i rummet som lyssnar på "joined_room"
     // att socketen med detta id't har gått med
-    io.to(data).emit("joined_room", { id: socket.id, room: data });
+    // io.to(data).emit("joined_room", { id: socket.id, room: data });
 
     // Skriver ut rummen socketen är med i
     console.log(socket.rooms);
+    console.log(rooms);
   });
 
   // MESSAGE LOGIC
@@ -76,13 +88,13 @@ io.on("connection", (socket) => {
     console.log(data);
 
     rooms.map((room) => {
-      if (room.name === data.currentRoom) {
+      if (room.name === data.room) {
         const newMessage = {
           message: data.message,
           clientID: data.clientID,
           randomColor: data.randomColor,
           avatar: data.avatar,
-          currentRoom: data.currentRoom,
+          currentRoom: data.room,
         };
         room.messages.push(newMessage);
         data.messages = room.messages;
@@ -91,20 +103,7 @@ io.on("connection", (socket) => {
 
     console.log(data.currentRoom);
 
-    io.to(data.currentRoom).emit("chatMessage2", data);
-
-    // console.log(avatar);
-    // io.emit("chatMessage", {
-    //   message,
-    //   clientID,
-    //   randomColor,
-    //   avatar,
-    //   currentRoom,
-    // });
-
-    // socket.join();
-
-    // io.emit("id", socket.id);
+    io.to(data.room).emit("chatMessage2", data);
   });
 
   //   This runs when clients disconnects
