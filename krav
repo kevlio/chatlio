@@ -21,3 +21,9 @@ skriva ett meddelande (ex. “... skriver just nu”)
 ● Man ska inte kunna ta bort ett lösenordsskyddat rum utan lösenordet
 ● Det ska finnas stöd för att skicka direktmeddelande till andra användare
 ● Det ska finnas stöd för att skicka emojis i meddelanden
+
+Att göra:
+Skissa upp logik
+Fixa så att det fungerar med rum på två olika klienter felfritt
+Dela upp frontend i komponenter
+Städa kod

@@ -88,6 +88,8 @@ io.on("connection", (socket) => {
     console.log(data);
 
     rooms.map((room) => {
+      console.log(room.name);
+      console.log(data.room);
       if (room.name === data.room) {
         const newMessage = {
           message: data.message,
@@ -100,8 +102,6 @@ io.on("connection", (socket) => {
         data.messages = room.messages;
       }
     });
-
-    console.log(data.currentRoom);
 
     io.to(data.room).emit("chatMessage2", data);
   });

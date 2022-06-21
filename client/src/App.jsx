@@ -117,6 +117,8 @@ function App() {
 
     socket.on("chatMessage2", (data) => {
       console.log("get chat");
+      console.log(data);
+      setRoom(data.room);
       setMessages(data.messages);
     });
 
