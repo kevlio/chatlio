@@ -19,7 +19,7 @@ io.on("connection", (socket) => {
   // rooms = [];
 
   // Emit when connected (single client)
-  socket.emit("connection", rooms);
+  // socket.emit("connection", rooms);
   // Client with ID has connected
   console.log(`Socket with ID: ${socket.id} has connected`);
   //   Welcome message (single client)
@@ -28,6 +28,7 @@ io.on("connection", (socket) => {
   // Broadcast when a user connects (to all clients, expect the one connecting)
   socket.broadcast.emit("message", "A user has joined the chat");
   // [To all clients in general - io.emit]
+  console.log(socket.rooms);
 
   // CLIENT LOGIC
   // Send ID for current Client
@@ -40,54 +41,77 @@ io.on("connection", (socket) => {
   io.emit("getAllClients", clients);
 
   // ROOM LOGIC
-  socket.on("add_room", (data) => {
-    const newRoom = {
-      // id: v4(),
-      name: data,
-      messages: [],
-    };
-    rooms.push(newRoom);
+  socket.on("delete_room", (data) => {
+    console.log(data);
 
-    // Vad gör socket.join egentligen?
-    socket.join(data);
+    console.log(socket.rooms);
+    const roomsArray = Array.from(socket.rooms);
+    console.log(roomsArray);
 
-    socket.emit("current_room", newRoom);
+    const filteredRooms = rooms.filter((room) => room.name !== data);
+    rooms = filteredRooms;
 
-    io.to(data).emit("added_room", rooms);
+    const roomNames = rooms.map((room) => {
+      return room.name;
+    });
+    console.log(roomNames);
+
+    io.emit("deleted_room", roomNames);
   });
 
   socket.on("join_room", (data) => {
-    // data: string med rumnamnet
-    console.log(`${socket.id} has joined ${data}`);
-
-    // Gå med i ett rum
+    // Join room
     socket.join(data);
+    console.log(socket.rooms);
 
-    const joinedRoom = rooms.filter((room) => {
+    const checkRoom = rooms.filter((room) => {
       return room.name === data;
     });
+
+    if (checkRoom.length === 0) {
+      console.log("room doesn't exist");
+      // Nytt rum
+      const newRoom = {
+        // id: v4(),
+        name: data,
+        messages: [],
+      };
+      // Pusha nytt rum
+      rooms.push(newRoom);
+
+      const roomNames = rooms.map((room) => {
+        return room.name;
+      });
+      console.log(roomNames);
+
+      // Skicka uppdaterade rum
+      io.emit("joined_room", roomNames);
+    }
+
+    // Join room and exit room
+    const roomsArray = Array.from(socket.rooms);
+
+    if (roomsArray.length === 3) {
+      const leaveRoom = roomsArray[1];
+      socket.leave(leaveRoom);
+    }
+
+    const joinedRoom = rooms.find((room) => {
+      return room.name === data;
+    });
+
     console.log("joined room");
     console.log(joinedRoom);
 
-    socket.emit("current_room", joinedRoom);
-
-    // Berättar för alla i rummet som lyssnar på "joined_room"
-    // att socketen med detta id't har gått med
-    // io.to(data).emit("joined_room", { id: socket.id, room: data });
-
-    // Skriver ut rummen socketen är med i
-    console.log(socket.rooms);
-    console.log(rooms);
+    io.to(data).emit("current_room", joinedRoom);
   });
 
   // MESSAGE LOGIC
-  //   Send message test
   socket.on("chatMessage", (data) => {
     console.log(rooms);
-
     console.log(data);
-
     rooms.map((room) => {
+      console.log(socket.rooms);
       console.log(room.name);
       console.log(data.room);
       if (room.name === data.room) {
@@ -102,8 +126,7 @@ io.on("connection", (socket) => {
         data.messages = room.messages;
       }
     });
-
-    io.to(data.room).emit("chatMessage2", data);
+    io.to(data.room).emit("sentMessage", data);
   });
 
   //   This runs when clients disconnects

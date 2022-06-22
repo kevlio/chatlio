@@ -4,6 +4,7 @@ import { GiDogHouse } from "react-icons/gi";
 import { FaUserAstronaut } from "react-icons/fa";
 import { BsChatFill } from "react-icons/bs";
 import { IoAddOutline } from "react-icons/io5";
+import { RiDeleteBack2Fill } from "react-icons/ri";
 
 import {
   Flex,
@@ -41,7 +42,7 @@ import {
 
 import { io } from "socket.io-client";
 
-let socket;
+const socket = io("http://localhost:4000");
 
 function App() {
   const { isOpen, onToggle, onClose, onOpen } = useDisclosure();
@@ -69,12 +70,10 @@ function App() {
   }, [messages]);
 
   useEffect(() => {
-    socket = io("http://localhost:4000");
-
     socket.on("connection", (data) => {
       console.log("Connected to server");
       console.log(data);
-      setRooms(data);
+      // setRooms(data);
     });
 
     socket.on("joined_room", (data) => {
@@ -82,18 +81,14 @@ function App() {
       setRooms(data);
     });
 
-    socket.on("added_room", (data) => {
+    socket.on("deleted_room", (data) => {
+      console.log(data);
       setRooms(data);
-      console.log(rooms);
     });
 
     socket.on("current_room", (data) => {
       console.log(data);
-      setMessages(data[0].messages);
-    });
-
-    socket.on("joined_room", (data) => {
-      console.log(`${data} has joined the room`);
+      setMessages(data.messages);
     });
 
     socket.on("message", (data) => {
@@ -115,9 +110,7 @@ function App() {
       );
     });
 
-    socket.on("chatMessage2", (data) => {
-      console.log("get chat");
-      console.log(data);
+    socket.on("sentMessage", (data) => {
       setRoom(data.room);
       setMessages(data.messages);
     });
@@ -130,11 +123,6 @@ function App() {
     return () => socket.off();
   }, []);
 
-  console.log(messages);
-  console.log(roomAdd);
-  console.log(rooms);
-  console.log(room);
-
   const handleMessage = (message) => {
     console.log(room);
     socket.emit("chatMessage", {
@@ -146,11 +134,13 @@ function App() {
     });
   };
 
-  const addRoom = (roomName) => {
-    socket.emit("add_room", roomName);
+  const handleDelete = (roomName) => {
+    console.log(roomName);
+    socket.emit("delete_room", roomName);
   };
 
   const joinRoom = (roomName) => {
+    console.log(roomName);
     socket.emit("join_room", roomName);
   };
 
@@ -170,7 +160,7 @@ function App() {
           <GridItem
             rowSpan={1}
             colSpan={3}
-            borderBottom="1px solid black"
+            // borderBottom="1px solid black"
             borderRadius={10}
             p={1}
             m={1}
@@ -198,12 +188,12 @@ function App() {
             </Flex>
           </GridItem>
           <GridItem
-            bg="blackAlpha.900"
-            color="whiteAlpha.900"
+            // bg="blackAlpha.900"
+            color="blackAlpha.900"
             rowSpan={5}
             colSpan={1}
             alignSelf="flex-start"
-            borderRight="2px solid black"
+            // borderRight="2px solid black"
             borderRadius={10}
             p={2}
             minH="100%"
@@ -239,7 +229,7 @@ function App() {
                     <InputRightElement
                       children={<IoAddOutline />}
                       onClick={() => {
-                        addRoom(room);
+                        joinRoom(room);
                         setRoomAdd("");
                       }}
                     />
@@ -254,7 +244,7 @@ function App() {
                       }}
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
-                          addRoom(room);
+                          joinRoom(room);
                           setRoomAdd("");
                         }
                       }}
@@ -262,19 +252,29 @@ function App() {
                   </InputGroup>
                 </Collapse>
                 {rooms &&
-                  rooms.reverse().map((roomItem) => (
-                    <Text
-                      bgColor={room === roomItem.name && "green"}
-                      onClick={() => {
-                        joinRoom(roomItem.name);
-                        setRoom(roomItem.name);
-                      }}
+                  rooms.reverse().map((roomName) => (
+                    <Flex
+                      alignItems="center"
+                      justifyContent="space-between"
+                      key={roomName}
                     >
-                      {roomItem.name}
-                    </Text>
+                      <Text
+                        bgColor={room === roomName && "green"}
+                        onClick={() => {
+                          joinRoom(roomName);
+                          setRoom(roomName);
+                        }}
+                      >
+                        {roomName}
+                      </Text>
+                      <RiDeleteBack2Fill
+                        color="red"
+                        onClick={() => handleDelete(roomName)}
+                      />
+                    </Flex>
                   ))}
               </Flex>
-              <Flex flexDir="column" p={1} m={1}>
+              <Flex flexDir="column" p={1} m={1} alignItems="flex-start">
                 <Button
                   // isDisabled
                   m={0}
@@ -301,7 +301,8 @@ function App() {
             rowSpan={5}
             colSpan={2}
             alignSelf="flex-end"
-            borderRight="2px solid black"
+            // borderRight="2px solid black"
+            border="1px solid black"
             borderRadius={10}
             p={2}
           >

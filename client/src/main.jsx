@@ -8,14 +8,13 @@ import { RecoilRoot } from "recoil";
 import { BrowserRouter as Router } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  // <React.StrictMode>
-  // Why doesn't strict mode work with socket.io?
-  <RecoilRoot>
-    <Router>
-      <ChakraProvider>
-        <App />
-      </ChakraProvider>
-    </Router>
-  </RecoilRoot>
-  // </React.StrictMode>
+  <React.StrictMode>
+    <RecoilRoot>
+      <Router>
+        <ChakraProvider>
+          <App />
+        </ChakraProvider>
+      </Router>
+    </RecoilRoot>
+  </React.StrictMode>
 );
