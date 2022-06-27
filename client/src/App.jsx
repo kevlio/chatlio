@@ -4,40 +4,27 @@ import { GiDogHouse } from "react-icons/gi";
 import { FaUserAstronaut } from "react-icons/fa";
 import { BsChatFill } from "react-icons/bs";
 import { IoAddOutline } from "react-icons/io5";
-import { RiDeleteBack2Fill } from "react-icons/ri";
+import { MdSend } from "react-icons/md";
+
+import Emoji from "react-emoji-render";
 
 import {
   Flex,
-  Avatar,
   Input,
-  Container,
-  StatGroup,
-  Stat,
-  StatLabel,
-  StatHelpText,
-  StatArrow,
-  Icon,
   Button,
   Center,
   Box,
-  Stack,
-  Heading,
   Text,
-  FormControl,
-  Fade,
   useDisclosure,
-  SimpleGrid,
   Image,
-  Link,
-  createIcon,
   Collapse,
   Grid,
   GridItem,
-  Checkbox,
-  CheckboxGroup,
   InputGroup,
   InputLeftElement,
   InputRightElement,
+  Textarea,
+  CloseButton,
 } from "@chakra-ui/react";
 
 import { io } from "socket.io-client";
@@ -45,13 +32,18 @@ import { io } from "socket.io-client";
 const socket = io("http://localhost:4000");
 
 function App() {
+  const handleKeyDown = (e) => {
+    e.target.style.height = "inherit";
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   const { isOpen, onToggle, onClose, onOpen } = useDisclosure();
 
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
 
   const [clientID, setClientID] = useState("");
-  const [clients, setClients] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const [randomColor, setRandomColor] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -59,7 +51,9 @@ function App() {
   const [room, setRoom] = useState("");
   const [rooms, setRooms] = useState([]);
 
-  const [roomAdd, setRoomAdd] = useState("");
+  const [newRoom, setNewRoom] = useState("");
+
+  const [errorMessage, setErrorMessage] = useState("");
 
   const scrollRef = useRef(null);
 
@@ -71,258 +65,269 @@ function App() {
 
   useEffect(() => {
     socket.on("connection", (data) => {
-      console.log("Connected to server");
-      console.log(data);
-      // setRooms(data);
+      setRooms(data.rooms);
+      setUsers(data.users);
+    });
+
+    socket.on("getUsers", (data) => {
+      setUsers(data);
     });
 
     socket.on("joined_room", (data) => {
-      console.log(data);
       setRooms(data);
     });
 
     socket.on("deleted_room", (data) => {
-      console.log(data);
       setRooms(data);
+      setMessages([]);
     });
 
     socket.on("current_room", (data) => {
-      console.log(data);
-      setMessages(data.messages);
+      setMessages(data);
     });
 
-    socket.on("message", (data) => {
-      console.log(data);
+    socket.on("register", (data) => {
+      setClientID(data.user_id);
+      setUsername(data.username);
     });
 
-    socket.on("getAllClients", (data) => {
-      console.log(data);
-      setClients(data);
-    });
-
-    socket.on("clientID", (data) => {
-      console.log(data);
-      setClientID(data);
-      const random = Math.floor(Math.random() * 16777215).toString(16);
-      setRandomColor(random);
-      setAvatar(
-        `https://avatars.dicebear.com/api/pixel-art-neutral/${data}.svg`
-      );
+    socket.on("errorMessage", (error) => {
+      setErrorMessage(error);
     });
 
     socket.on("sentMessage", (data) => {
-      setRoom(data.room);
-      setMessages(data.messages);
+      setMessages(data);
     });
 
     socket.on("disconnect", () => {
+      setUsername("");
+      setClientID("");
       setRooms([]);
       setMessages([]);
+      setErrorMessage("");
     });
 
     return () => socket.off();
   }, []);
 
   const handleMessage = (message) => {
-    console.log(room);
     socket.emit("chatMessage", {
       message,
       clientID,
+      username,
       randomColor,
       avatar,
       room,
     });
   };
 
+  const [username, setUsername] = useState("");
+
+  const handleUser = (username) => {
+    setClientID(username);
+    const random = Math.floor(Math.random() * 16777215).toString(16);
+    setRandomColor(random);
+    setAvatar(
+      `https://avatars.dicebear.com/api/pixel-art-neutral/${username}.svg`
+    );
+    socket.emit("register", username);
+  };
+
+  // const handleLeave = (username) => {
+  //   setUsername("");
+  // };
+
   const handleDelete = (roomName) => {
-    console.log(roomName);
     socket.emit("delete_room", roomName);
   };
 
   const joinRoom = (roomName) => {
-    console.log(roomName);
-    socket.emit("join_room", roomName);
+    socket.emit("join_room", { roomName, username });
   };
 
   return (
     <div className="App">
-      <Center display="flex" my={10}>
+      <Center display="flex">
         <Grid
-          // h="200px"
+          border="4px solid black"
+          bg="gray.200"
           templateRows="repeat(6, 1fr)"
-          templateColumns="repeat(3, 1fr)"
-          // gap={4}
-          border="3px solid black"
-          borderRadius={10}
-          p={1}
+          templateColumns="repeat(4, 1fr)"
           m={1}
         >
-          <GridItem
-            rowSpan={1}
-            colSpan={3}
-            // borderBottom="1px solid black"
-            borderRadius={10}
-            p={1}
-            m={1}
-          >
+          <GridItem bgColor="black" rowSpan={1} colSpan={4} px={2}>
             <Flex flexDir="column">
-              <Flex justifyContent="space-between" alignItems="center" gap={2}>
-                <Text fontSize="2xl" fontWeight="bold" color="green.400">
+              <Flex
+                justifyContent="space-between"
+                alignItems="center"
+                gap={2}
+                p={2}
+              >
+                <Text fontSize="2xl" fontWeight="medium" color="white">
                   {clientID
-                    ? `Welcome ${clientID.slice(0, 10)}...`
+                    ? `Welcome ${username}...`
                     : "Waiting for server..."}
                 </Text>
+                <Text color="white">{errorMessage}</Text>
                 <Button
                   colorScheme="purple"
-                  alignSelf="flex-start"
+                  // alignSelf="flex-start"
                   width="min-content"
                   size="sm"
                 >
                   Leave chatroom
                 </Button>
               </Flex>
-              <Checkbox size="sm">
-                Dont allow new users to see previous texts
-              </Checkbox>
-              {/* onChange={handleCheck} */}
             </Flex>
           </GridItem>
           <GridItem
             // bg="blackAlpha.900"
-            color="blackAlpha.900"
+            bgColor="black"
+            color="white"
             rowSpan={5}
             colSpan={1}
             alignSelf="flex-start"
-            // borderRight="2px solid black"
-            borderRadius={10}
-            p={2}
+            px={2}
             minH="100%"
             maxH="400px"
-            overflow="hidden"
+            overflowY="scroll"
+            css={{
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+            }}
           >
             <Flex flexDir="column" alignItems="flex-start">
-              <Flex flexDir="column" p={1} m={1}>
-                <Button
-                  // isDisabled
-                  m={0}
-                  p={0}
-                  bg="none"
-                  fontSize="1xl"
-                  fontWeight="bold"
-                  leftIcon={<GiDogHouse />}
-                >
-                  Rooms
-                </Button>
-                <Button
-                  // isDisabled
-                  m={0}
-                  p={0}
-                  bg="none"
-                  fontSize="1xl"
-                  // leftIcon={<IoAddOutline />}
-                  onClick={() => onToggle()}
-                >
-                  Add room
-                </Button>
-                <Collapse in={isOpen}>
+              <Flex flexDir="column" px={1} mx={1} alignItems="flex-start">
+                <Flex alignItems="center" gap={2}>
+                  <FaUserAstronaut />
+                  <Text fontWeight="bold">Users</Text>
+                </Flex>
+                <Flex>
                   <InputGroup>
                     <InputRightElement
-                      children={<IoAddOutline />}
                       onClick={() => {
-                        joinRoom(room);
-                        setRoomAdd("");
+                        handleUser(username);
                       }}
+                      children={<IoAddOutline />}
                     />
                     <Input
+                      placeholder="Join chat"
                       variant="outline"
                       maxW="150px"
-                      value={roomAdd}
+                      value={username}
+                      color={clientID ? "blue.300" : "white"}
+                      // disabled={clientID && true}
                       fontSize="lg"
-                      onChange={(e) => {
-                        setRoomAdd(e.target.value);
-                        setRoom(e.target.value);
-                      }}
+                      onChange={(e) => setUsername(e.target.value)}
                       onKeyPress={(e) => {
+                        // && !clientID
                         if (e.key === "Enter") {
-                          joinRoom(room);
-                          setRoomAdd("");
+                          handleUser(username);
                         }
                       }}
                     />
                   </InputGroup>
-                </Collapse>
+                </Flex>
+                {users &&
+                  users.map((client) => (
+                    <Text
+                      mx={6}
+                      key={client.id}
+                      color={username === client.username && "blue.300"}
+                      fontWeight={username === client.username && "bold"}
+                    >
+                      {client.username}
+                    </Text>
+                  ))}
+              </Flex>
+              <Flex flexDir="column" p={1} m={1}>
+                <Flex alignItems="center" gap={2}>
+                  <GiDogHouse />
+                  <Text fontWeight="bold">Rooms</Text>
+                </Flex>
+                <InputGroup>
+                  <InputRightElement
+                    children={<IoAddOutline />}
+                    onClick={() => {
+                      joinRoom(room);
+                      setNewRoom("");
+                      onToggle();
+                    }}
+                  />
+                  <Input
+                    placeholder="Add room"
+                    variant="outline"
+                    maxW="150px"
+                    value={newRoom}
+                    fontSize="lg"
+                    onChange={(e) => {
+                      setNewRoom(e.target.value);
+                      setRoom(e.target.value);
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        joinRoom(room);
+                        setNewRoom("");
+                        onToggle();
+                      }
+                    }}
+                  />
+                </InputGroup>
                 {rooms &&
-                  rooms.reverse().map((roomName) => (
+                  rooms.map((roomItem) => (
                     <Flex
+                      color="white"
                       alignItems="center"
                       justifyContent="space-between"
-                      key={roomName}
+                      key={room.room_id}
+                      bgColor={
+                        room === roomItem.room_name ? "gray.700" : "black"
+                      }
                     >
-                      <Text
-                        bgColor={room === roomName && "green"}
+                      <Button
+                        m={0}
+                        width="90%"
                         onClick={() => {
-                          joinRoom(roomName);
-                          setRoom(roomName);
+                          joinRoom(roomItem.room_name);
+                          setRoom(roomItem.room_name);
+                        }}
+                        bgColor={
+                          room === roomItem.room_name ? "gray.700" : "black"
+                        }
+                        _hover={{
+                          bg: "green.400",
                         }}
                       >
-                        {roomName}
-                      </Text>
-                      <RiDeleteBack2Fill
-                        color="red"
-                        onClick={() => handleDelete(roomName)}
-                      />
+                        {roomItem.room_name}
+                      </Button>
+                      <Box px={2}>
+                        <CloseButton
+                          color={room === roomItem.room_name ? "red" : "white"}
+                          onClick={() => handleDelete(roomItem.room_name)}
+                        />
+                      </Box>
                     </Flex>
                   ))}
               </Flex>
-              <Flex flexDir="column" p={1} m={1} alignItems="flex-start">
-                <Button
-                  // isDisabled
-                  m={0}
-                  p={0}
-                  bg="none"
-                  fontSize="1xl"
-                  fontWeight="bold"
-                  leftIcon={<FaUserAstronaut />}
-                >
-                  Users
-                </Button>
-                {clients &&
-                  clients
-                    .reverse()
-                    .map((client) => (
-                      <Text bgColor={clientID === client && "green"}>
-                        {client.slice(0, 5)}
-                      </Text>
-                    ))}
-              </Flex>
             </Flex>
           </GridItem>
-          <GridItem
-            rowSpan={5}
-            colSpan={2}
-            alignSelf="flex-end"
-            // borderRight="2px solid black"
-            border="1px solid black"
-            borderRadius={10}
-            p={2}
-          >
+          <GridItem rowSpan={5} colSpan={3} minH="100%" bgColor="gray.800">
             <Flex flexDir="column">
               <Flex
                 minH="100%"
                 flexDir="column"
-                maxH="400px"
-                maxW="400px"
                 overflowY="scroll"
                 css={{
                   "&::-webkit-scrollbar": {
                     display: "none",
                   },
                 }}
-                gap={1}
               >
                 {messages &&
                   messages.map((message) => (
                     <Flex
+                      key={message.id}
                       flexDir="row"
                       justifyContent="space-between"
                       border="1px solid purple"
@@ -331,24 +336,45 @@ function App() {
                       borderRadius={6}
                       p={1}
                       overflowWrap="break-word"
+                      color="white"
                     >
-                      <Text>{message.roomAdd}</Text>
-                      <Flex flexDir="column">
-                        <Text fontSize="10px">{message.clientID}</Text>
-                        <Text color="white">{message.message}</Text>
+                      {/* <Text>{message.room_name}</Text> */}
+                      <Flex flexDir="column" alignItems="center">
+                        {/* <Text fontSize="10px">{message.user_id}</Text> */}
+                        <Text color="blue.300">{message.time}</Text>
+                        <Emoji text={message.message} />
                       </Flex>
-                      <Image src={message.avatar} boxSize={10} rounded="full" />
+                      <Flex gap={2} alignItems="center">
+                        <Text>{message.username}</Text>
+                        <Image
+                          src={message.avatar}
+                          boxSize={10}
+                          rounded="full"
+                        />
+                      </Flex>
                     </Flex>
                   ))}
                 <Box ref={scrollRef}></Box>
-                <InputGroup>
-                  <InputLeftElement children={<BsChatFill />} />
-                  <Input
-                    placeholder="Write message..."
+                <Flex
+                  flexDir="row"
+                  alignItems="flex-end"
+                  bgColor="#1A202C"
+                  border="20px solid #1A202C"
+                >
+                  <Textarea
+                    width="100%"
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type your message..."
                     variant="outline"
-                    bg="gray.100"
+                    bg="gray.700"
+                    color="white"
                     value={message}
                     fontSize="lg"
+                    border="none"
+                    borderRadius="none"
+                    _focus={{
+                      border: "1px solid black",
+                    }}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
@@ -357,17 +383,23 @@ function App() {
                       }
                     }}
                   />
-                </InputGroup>
-                <Button
-                  minH={10}
-                  colorScheme="green"
-                  onClick={() => {
-                    handleMessage(message);
-                    setMessage("");
-                  }}
-                >
-                  Send Message
-                </Button>
+                  <Box p={1}>
+                    <MdSend
+                      onMouseOver={({ target }) =>
+                        (target.style.color = "#25D366")
+                      }
+                      onMouseOut={({ target }) =>
+                        (target.style.color = "#48BB78")
+                      }
+                      // color="#25D366"
+                      size={40}
+                      onClick={() => {
+                        handleMessage(message);
+                        setMessage("");
+                      }}
+                    />
+                  </Box>
+                </Flex>
               </Flex>
             </Flex>
           </GridItem>

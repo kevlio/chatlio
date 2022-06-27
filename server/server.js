@@ -1,91 +1,59 @@
 const { Server } = require("socket.io");
-const { v4 } = require("uuid");
+const { DateTime } = require("luxon");
+const messagesModel = require("./models/messages.model");
+const usersModel = require("./models/users.model");
+const roomsModel = require("./models/rooms.model");
 
 const io = new Server(4000, {
-  /* options */
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
-// Flyttas till databas sen
-let clients = [];
-let rooms = [];
+io.on("connection", async (socket) => {
+  const users = await usersModel.getUsers();
+  const rooms = await roomsModel.getRooms();
 
-io.on("connection", (socket) => {
-  // Restart
-  // clients = [];
-  // rooms = [];
+  io.emit("connection", { users, rooms });
 
-  // Emit when connected (single client)
-  // socket.emit("connection", rooms);
-  // Client with ID has connected
-  console.log(`Socket with ID: ${socket.id} has connected`);
-  //   Welcome message (single client)
-  socket.emit("message", "Welcome to Social fabric");
-
-  // Broadcast when a user connects (to all clients, expect the one connecting)
-  socket.broadcast.emit("message", "A user has joined the chat");
-  // [To all clients in general - io.emit]
-  console.log(socket.rooms);
-
-  // CLIENT LOGIC
-  // Send ID for current Client
-  console.log(clients);
-
-  // Emit client ID (single client)
-  socket.emit("clientID", socket.id);
-  // Emit clients to all clients
-  clients.push(socket.id);
-  io.emit("getAllClients", clients);
-
-  // ROOM LOGIC
-  socket.on("delete_room", (data) => {
-    console.log(data);
-
-    console.log(socket.rooms);
-    const roomsArray = Array.from(socket.rooms);
-    console.log(roomsArray);
-
-    const filteredRooms = rooms.filter((room) => room.name !== data);
-    rooms = filteredRooms;
-
-    const roomNames = rooms.map((room) => {
-      return room.name;
-    });
-    console.log(roomNames);
-
-    io.emit("deleted_room", roomNames);
+  socket.on("error", (errorMessage) => {
+    io.emit("errorMessage", errorMessage);
   });
 
-  socket.on("join_room", (data) => {
-    // Join room
-    socket.join(data);
-    console.log(socket.rooms);
+  socket.on("register", async (registerUsername) => {
+    const users = await usersModel.getUsers();
 
-    const checkRoom = rooms.filter((room) => {
-      return room.name === data;
+    const checkUser = users.filter((user) => {
+      return user.username === registerUsername;
+    });
+    if (checkUser.length !== 0) {
+      socket.emit("errorMessage", "User already exist");
+      return;
+    }
+    usersModel.addUser(socket.id, registerUsername);
+    io.emit("register", { user_id: socket.id, username: registerUsername });
+    io.emit("getUsers", users);
+  });
+
+  // ROOM LOGIC
+
+  socket.on("join_room", async ({ roomName, username }) => {
+    // Join room
+    socket.join(roomName);
+
+    const updatedRooms = await roomsModel.getRooms();
+
+    const checkRoom = updatedRooms.filter((room) => {
+      return room.room_name === roomName;
     });
 
     if (checkRoom.length === 0) {
-      console.log("room doesn't exist");
-      // Nytt rum
-      const newRoom = {
-        // id: v4(),
-        name: data,
-        messages: [],
-      };
-      // Pusha nytt rum
-      rooms.push(newRoom);
-
-      const roomNames = rooms.map((room) => {
-        return room.name;
-      });
-      console.log(roomNames);
+      roomsModel.addRoom(roomName);
+      const updatedRooms = await roomsModel.getRooms();
 
       // Skicka uppdaterade rum
-      io.emit("joined_room", roomNames);
+      io.emit("joined_room", updatedRooms);
     }
 
     // Join room and exit room
@@ -96,37 +64,50 @@ io.on("connection", (socket) => {
       socket.leave(leaveRoom);
     }
 
-    const joinedRoom = rooms.find((room) => {
-      return room.name === data;
-    });
+    await usersModel.updateActiveRoom(roomName, username);
 
-    console.log("joined room");
-    console.log(joinedRoom);
+    const usersRoomUpdated = await usersModel.getUsers();
+    io.emit("getUsers", usersRoomUpdated);
 
-    io.to(data).emit("current_room", joinedRoom);
+    const roomMessages = await messagesModel.getRoomMessages(roomName);
+    io.to(roomName).emit("current_room", roomMessages);
+  });
+
+  socket.on("delete_room", async (roomName) => {
+    // Delete room in database
+    // Would be cool to solve with Foreign Key
+    await roomsModel.deleteRoom(roomName);
+    await messagesModel.deleteRoomMessages(roomName);
+    const updatedRooms = await roomsModel.getRooms();
+    io.emit("deleted_room", updatedRooms);
   });
 
   // MESSAGE LOGIC
-  socket.on("chatMessage", (data) => {
-    console.log(rooms);
-    console.log(data);
-    rooms.map((room) => {
-      console.log(socket.rooms);
-      console.log(room.name);
-      console.log(data.room);
-      if (room.name === data.room) {
-        const newMessage = {
-          message: data.message,
-          clientID: data.clientID,
-          randomColor: data.randomColor,
-          avatar: data.avatar,
-          currentRoom: data.room,
-        };
-        room.messages.push(newMessage);
-        data.messages = room.messages;
-      }
-    });
-    io.to(data.room).emit("sentMessage", data);
+  socket.on("chatMessage", async (data) => {
+    if (data.username.length === 0) {
+      socket.emit("errorMessage", "Please enter a username");
+      return;
+    }
+    if (data.message.length === 0) {
+      socket.emit("errorMessage", "Please enter a message");
+      return;
+    }
+
+    const timeStamp = DateTime.now().toLocaleString(DateTime.DATETIME_MED);
+
+    const newMsg = {
+      message: data.message,
+      username: data.username,
+      user_id: data.clientID,
+      room_name: data.room,
+      color: data.randomColor,
+      avatar: data.avatar,
+      time: timeStamp,
+    };
+    messagesModel.addMessage(newMsg);
+
+    const roomMessages = await messagesModel.getRoomMessages(data.room);
+    io.to(data.room).emit("sentMessage", roomMessages);
   });
 
   //   This runs when clients disconnects
