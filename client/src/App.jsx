@@ -44,6 +44,9 @@ function App() {
 
   const [clientID, setClientID] = useState("");
   const [users, setUsers] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
+
+  const [typing, setTyping] = useState("");
 
   const [randomColor, setRandomColor] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -77,8 +80,14 @@ function App() {
       setRooms(data);
     });
 
+    socket.on("active_users", (users) => {
+      console.log(users);
+      setActiveUsers(users);
+    });
+
     socket.on("deleted_room", (data) => {
       setRooms(data);
+      setRoom("");
       setMessages([]);
     });
 
@@ -86,9 +95,10 @@ function App() {
       setMessages(data);
     });
 
-    socket.on("register", (data) => {
-      setClientID(data.user_id);
-      setUsername(data.username);
+    socket.on("registered", (user) => {
+      console.log(user);
+      setClientID(user.user_id);
+      setUsername(user.username);
     });
 
     socket.on("errorMessage", (error) => {
@@ -97,6 +107,11 @@ function App() {
 
     socket.on("sentMessage", (data) => {
       setMessages(data);
+    });
+
+    socket.on("isTyping", (data) => {
+      console.log(data);
+      setTyping(data);
     });
 
     socket.on("disconnect", () => {
@@ -119,6 +134,17 @@ function App() {
       avatar,
       room,
     });
+    setTyping("");
+  };
+
+  // Vässa
+  const handleTyping = () => {
+    if (message.length)
+      socket.emit("isTyping", { typing: true, user: username });
+
+    if (!message.length) {
+      socket.emit("isTyping", { typing: false, user: username });
+    }
   };
 
   const [username, setUsername] = useState("");
@@ -133,10 +159,6 @@ function App() {
     socket.emit("register", username);
   };
 
-  // const handleLeave = (username) => {
-  //   setUsername("");
-  // };
-
   const handleDelete = (roomName) => {
     socket.emit("delete_room", roomName);
   };
@@ -144,6 +166,9 @@ function App() {
   const joinRoom = (roomName) => {
     socket.emit("join_room", { roomName, username });
   };
+  // const handleLeave = (username) => {
+  //   setUsername("");
+  // };
 
   return (
     <div className="App">
@@ -233,7 +258,7 @@ function App() {
                   users.map((client) => (
                     <Text
                       mx={6}
-                      key={client.id}
+                      key={client.username}
                       color={username === client.username && "blue.300"}
                       fontWeight={username === client.username && "bold"}
                     >
@@ -314,6 +339,17 @@ function App() {
           </GridItem>
           <GridItem rowSpan={5} colSpan={3} minH="100%" bgColor="gray.800">
             <Flex flexDir="column">
+              <Flex flexDir="ROW" gap={1} p={2} alignSelf="flex-end">
+                {activeUsers &&
+                  activeUsers.map((user) => (
+                    <Text
+                      key={user.username}
+                      color={user.username === username ? "blue.300" : "white"}
+                    >
+                      {user.username}
+                    </Text>
+                  ))}
+              </Flex>
               <Flex
                 minH="100%"
                 flexDir="column"
@@ -355,11 +391,19 @@ function App() {
                     </Flex>
                   ))}
                 <Box ref={scrollRef}></Box>
+                <Text
+                  color="gray.300"
+                  alignSelf="center"
+                  borderTop="5px solid #1A202C"
+                >
+                  {typing}
+                </Text>
                 <Flex
                   flexDir="row"
                   alignItems="flex-end"
                   bgColor="#1A202C"
                   border="20px solid #1A202C"
+                  borderTop="5px solid #1A202C"
                 >
                   <Textarea
                     width="100%"
@@ -375,8 +419,13 @@ function App() {
                     _focus={{
                       border: "1px solid black",
                     }}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={(e) => {
+                      setMessage(e.target.value);
+                    }}
                     onKeyPress={(e) => {
+                      if (e.key !== "Enter") {
+                        handleTyping();
+                      }
                       if (e.key === "Enter") {
                         handleMessage(message);
                         setMessage("");

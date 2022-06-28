@@ -1,0 +1,37 @@
+{"message":"1","username":"sd","user_id":"WRoZ93bYYEbTMpSvAAAB","room_name":"ERER","color":"6526d6","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/sd.svg","time":"28 juni 2022 16:20"}
+{"message":"2","username":"sd","user_id":"WRoZ93bYYEbTMpSvAAAB","room_name":"ERER","color":"6526d6","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/sd.svg","time":"28 juni 2022 16:20"}
+{"message":"3","username":"sd","user_id":"WRoZ93bYYEbTMpSvAAAB","room_name":"ERER","color":"6526d6","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/sd.svg","time":"28 juni 2022 16:21"}
+{"message":"2","username":"sd","user_id":"sd","room_name":"rum3","color":"7e0b60","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/sd.svg","time":"28 juni 2022 17:05"}
+{"message":"HEJ :)","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:25"}
+{"message":"\nHEJ :D","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:28"}
+{"message":":)","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:28"}
+{"message":"HEJ","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:34"}
+{"message":"TEST\n","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:34"}
+{"message":"🤪","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:35"}
+{"message":"🤪","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:35"}
+{"message":"😍","username":"CAPYBOI","user_id":"dx-7Sg-V1dDoQZrTAAAD","room_name":"RUM1","color":"57b3d4","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 17:37"}
+{"message":"dfdf","username":"","user_id":"","room_name":"RUM1","color":"cbec79","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOG.svg","time":"28 juni 2022 18:54"}
+{"message":"23223","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"RUM2","color":"fbda23","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 18:54"}
+{"message":"22323","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"RUM2","color":"fbda23","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 18:54"}
+{"message":"222323","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"HEJ","color":"fbda23","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 18:55"}
+{"message":"232323","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"HEJ","color":"fbda23","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 18:55"}
+{"message":"2323232","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"","color":"fbda23","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 18:55"}
+{"message":"232323","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"","color":"fbda23","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 18:55"}
+{"message":"GGGGGGGG","username":"CAp","user_id":"AuoqjmcY5UJYt0n2AABK","room_name":"CAPYBOI","color":"e86535","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOG.svg","time":"28 juni 2022 19:45"}
+{"message":"hheheheh","username":"2","user_id":"yOWOkmHmXMh7FCNEAABH","room_name":"rum3","color":"e0872a","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/2.svg","time":"28 juni 2022 19:46"}
+{"message":"dfdfdf","username":"1","user_id":"1","room_name":"rum3","color":"510433","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/1.svg","time":"28 juni 2022 19:46"}
+{"message":"HEJHEJ","username":"HOG","user_id":"HOG","room_name":"rum3","color":"683b88","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOG.svg","time":"28 juni 2022 19:50"}
+{"message":"HALLÅ","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"rum3","color":"d6c172","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 19:50"}
+{"message":"SDSD\n","username":"HOG","user_id":"HOG","room_name":"rum3","color":"683b88","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOG.svg","time":"28 juni 2022 19:50"}
+{"message":"\nSSS","username":"HOG","user_id":"HOG","room_name":"rum3","color":"683b88","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOG.svg","time":"28 juni 2022 19:50"}
+{"message":"GG\n","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"rum3","color":"d6c172","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 19:50"}
+{"message":"HHH\n","username":"CAPYBOI","user_id":"CAPYBOI","room_name":"rum3","color":"d6c172","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPYBOI.svg","time":"28 juni 2022 19:50"}
+{"message":"HEJ","username":"YE","user_id":"qlHe-IfjBjRVkJhKAAAF","room_name":"RUM1","color":"ee769d","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HEY.svg","time":"28 juni 2022 20:12"}
+{"message":"DFDFF","username":"DFDF","user_id":"84kMqrNHJDOF0TT-AAAL","room_name":"RUM1","color":"67141","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/DFDF.svg","time":"28 juni 2022 20:14"}
+{"message":"\nDFDF","username":"DFDF","user_id":"84kMqrNHJDOF0TT-AAAL","room_name":"RUM1","color":"67141","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/DFDF.svg","time":"28 juni 2022 20:14"}
+{"message":"DFDF","username":"DFDF","user_id":"84kMqrNHJDOF0TT-AAAL","room_name":"RU,2","color":"b408f","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/YEP.svg","time":"28 juni 2022 20:14"}
+{"message":"\nDFDF","username":"DFDF","user_id":"84kMqrNHJDOF0TT-AAAL","room_name":"RU,2","color":"b408f","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/YEP.svg","time":"28 juni 2022 20:14"}
+{"message":"hej min vän =)","username":"CAPY","user_id":"hTuEWkGQl-8sdBe0AAAL","room_name":"BR5","color":"11bcdc","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPY.svg","time":"28 juni 2022 20:31"}
+{"message":"hallåå :)","username":"HOGGY","user_id":"96ArolZkubJFOV6EAAAN","room_name":"BR5","color":"7ba23f","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOGGY.svg","time":"28 juni 2022 20:32"}
+{"message":"generalen","username":"HOGGY","user_id":"96ArolZkubJFOV6EAAAN","room_name":"General","color":"7ba23f","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/HOGGY.svg","time":"28 juni 2022 20:32"}
+{"message":"japp","username":"CAPY","user_id":"hTuEWkGQl-8sdBe0AAAL","room_name":"General","color":"11bcdc","avatar":"https://avatars.dicebear.com/api/pixel-art-neutral/CAPY.svg","time":"28 juni 2022 20:32"}

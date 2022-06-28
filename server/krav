@@ -9,24 +9,23 @@ CHECK ● Validera meddelande på backenden så att en användare inte kan skick
 CHECK ● SQL/KNEX: Den ska spara meddelande och rum långsiktigt, i en databas
 CHECK ● SQL/KNEX: Chattrum som skapas ska ha unika namn
 CHECK ● SQL/KNEX: Varje meddelande ska ha info om vem som skrev det och när
-
-KVAR:
-● Den ska innehålla en middleware som sparar loggar med relevant info i en eller
-enskilda filer (tidsstämpel, vem som skrev det, i vilken kanal)
-
+CHECK ● Den ska innehålla en middleware som sparar loggar med relevant info i en eller enskilda filer (tidsstämpel, vem som skrev det, i vilken kanal)
 ---------------------------------------------------------------
-För att uppnå Väl Godkänt är kraven att behöver du implementera minst 3 av följande
-kriterier:
-● Klienten ska visa alla användare som är aktiva i chatten/rummet
-● När någon skriver ska det finnas någon form av indikator att någon håller på att
-skriva ett meddelande (ex. “... skriver just nu”)
+För att uppnå Väl Godkänt är kraven att behöver du implementera minst 3 av följande kriterier:
+CHECK ● Klienten ska visa alla användare som är aktiva i chatten/rummet
+CHECK ● När någon skriver ska det finnas någon form av indikator att någon håller på att skriva ett meddelande (ex. “... skriver just nu”)
+CHECK ● Det ska finnas stöd för att skicka emojis i meddelanden
+
+● Det ska finnas stöd för att skicka direktmeddelande till andra användare
 ● Det ska finnas stöd för att skapa ett låst rum som kräver lösenord
 ● Man ska inte kunna ta bort ett lösenordsskyddat rum utan lösenordet
-● Det ska finnas stöd för att skicka direktmeddelande till andra användare
-CHECK? ● Det ska finnas stöd för att skicka emojis i meddelanden
 
-Att göra:
+Nice to have:
+USERS RENDERAR KONSTIGT EFTER
 Dela upp frontend i komponenter
 Städa kod
 Ev. utveckla felhantering, undvika serverkrascher - utnyttja felmeddelande
 Ta bort onödiga paket
+EMOJIS I INPUTFÄLT?
+DELETE ROOM TA BORT FRÅN SOCKETS ROOMS
+Bättra på typing...

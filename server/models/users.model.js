@@ -58,9 +58,25 @@ function updateActiveRoom(roomName, username) {
   });
 }
 
+// GET ONE USER
+function getUsersInRoom(roomName) {
+  console.log(roomName);
+  const sql = "SELECT username FROM users WHERE active_room = ?";
+  return new Promise((resolve, reject) => {
+    db.all(sql, [roomName], (error, rows) => {
+      if (error) {
+        console.error(error.message);
+        reject(error);
+      }
+      resolve(rows);
+    });
+  });
+}
+
 module.exports = {
   addUser,
   getUsers,
   getOneUser,
   updateActiveRoom,
+  getUsersInRoom,
 };
