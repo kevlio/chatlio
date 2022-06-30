@@ -21,11 +21,13 @@ CHECK ● Det ska finnas stöd för att skicka emojis i meddelanden
 ● Man ska inte kunna ta bort ett lösenordsskyddat rum utan lösenordet
 
 Nice to have:
-USERS RENDERAR KONSTIGT EFTER
+CHECK Users renderings opt
+CHECK EMOJIS
 Dela upp frontend i komponenter
 Städa kod
 Ev. utveckla felhantering, undvika serverkrascher - utnyttja felmeddelande
 Ta bort onödiga paket
-EMOJIS I INPUTFÄLT?
 DELETE ROOM TA BORT FRÅN SOCKETS ROOMS
 Bättra på typing...
+Rensa console logs
+Feltesta

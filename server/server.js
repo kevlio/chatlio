@@ -6,8 +6,6 @@ const roomsModel = require("./models/rooms.model");
 
 const logMessages = require("./middleware/utils");
 
-console.log(logMessages);
-
 const io = new Server(4000, {
   cors: {
     origin: "*",
@@ -16,7 +14,7 @@ const io = new Server(4000, {
 });
 
 io.use((socket, next) => {
-  socket.on("chatMessage", (data) => {
+  socket.on("chat_message", (data) => {
     const timeStamp = DateTime.now().toLocaleString(DateTime.DATETIME_MED);
     const newMsg = {
       message: data.message,
@@ -39,7 +37,7 @@ io.on("connection", async (socket) => {
   io.emit("connection", { users, rooms });
 
   socket.on("error", (errorMessage) => {
-    io.emit("errorMessage", errorMessage);
+    io.emit("error_message", errorMessage);
   });
 
   socket.on("register", async (registerUsername) => {
@@ -48,11 +46,12 @@ io.on("connection", async (socket) => {
       return user.username === registerUsername;
     });
     if (checkUser.length !== 0) {
-      socket.emit("errorMessage", "User already exist");
+      socket.emit("error_message", "User already exist");
       return;
     }
     usersModel.addUser(socket.id, registerUsername);
-    io.emit("getUsers", users);
+    const updatedUsers = await usersModel.getUsers();
+    io.emit("get_users", updatedUsers);
 
     socket.emit("registered", {
       user_id: socket.id,
@@ -60,8 +59,13 @@ io.on("connection", async (socket) => {
     });
   });
 
-  // ROOM LOGIC
+  socket.on("delete_users", async (clientID) => {
+    await usersModel.deleteUsers(clientID);
+    const updatedUsers = await usersModel.getUsers();
+    io.emit("get_users", updatedUsers);
+  });
 
+  // ROOM LOGIC
   socket.on("join_room", async ({ roomName, username }) => {
     // Join room
     socket.join(roomName);
@@ -90,51 +94,41 @@ io.on("connection", async (socket) => {
 
     await usersModel.updateActiveRoom(roomName, username);
     const activeUsers = await usersModel.getUsersInRoom(roomName);
-    console.log(activeUsers);
     io.to(roomName).emit("active_users", activeUsers);
 
     const usersRoomUpdated = await usersModel.getUsers();
-    io.emit("getUsers", usersRoomUpdated);
+    io.emit("get_users", usersRoomUpdated);
 
     const roomMessages = await messagesModel.getRoomMessages(roomName);
     io.to(roomName).emit("current_room", roomMessages);
   });
 
   socket.on("delete_room", async (roomName) => {
-    // Delete room in database
-    // Would be cool to solve with Foreign Key
-    // Socket Leave
+    await usersModel.removeActiveRoom(roomName);
     await roomsModel.deleteRoom(roomName);
-    await messagesModel.deleteRoomMessages(roomName);
     const updatedRooms = await roomsModel.getRooms();
     io.emit("deleted_room", updatedRooms);
+    const activeUsers = await usersModel.getUsersInRoom(roomName);
+    io.to(roomName).emit("active_users", activeUsers);
   });
 
   // Vässa denna
-  socket.on("isTyping", (data) => {
-    console.log(data);
-    if (data.typing) {
-      socket.broadcast.emit("isTyping", `${data.user} is typing...`);
-    }
-    if (!data.typing) {
-      console.log("not typing");
-      socket.broadcast.emit("isTyping", "");
-    }
+  socket.on("handle_typing", ({ typingState, username, room }) => {
+    socket.to(room).emit("is_typing", { typingState, username });
   });
 
   // MESSAGE LOGIC
-  socket.on("chatMessage", async (data) => {
-    socket.broadcast.emit("isTyping", "");
+  socket.on("chat_message", async (data) => {
     if (!data.username.length) {
-      socket.emit("errorMessage", "Please enter a username");
+      socket.emit("error_message", "Please enter a username");
       return;
     }
     if (!data.message.length) {
-      socket.emit("errorMessage", "Please enter a message");
+      socket.emit("error_message", "Please enter a message");
       return;
     }
     if (!data.room.length) {
-      socket.emit("errorMessage", "Please enter a room");
+      socket.emit("error_message", "Please enter a room");
       return;
     }
 
@@ -154,10 +148,9 @@ io.on("connection", async (socket) => {
     socket.emit("logMessages", newMsg);
 
     const roomMessages = await messagesModel.getRoomMessages(data.room);
-    io.to(data.room).emit("sentMessage", roomMessages);
+    io.to(data.room).emit("sent_message", roomMessages);
   });
 
-  //   This runs when clients disconnects
   socket.on("disconnect", (reason) => {
     console.log(`Socket ${socket.id} disconnected. Reason ${reason}`);
     io.emit("message", "A user has left the chat");

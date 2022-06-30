@@ -58,6 +58,19 @@ function updateActiveRoom(roomName, username) {
   });
 }
 
+function removeActiveRoom(roomName) {
+  const sql = "UPDATE users SET active_room = null WHERE active_room = ?";
+  return new Promise((resolve, reject) => {
+    db.run(sql, roomName, (error) => {
+      if (error) {
+        console.error(error.message);
+        reject(error);
+      }
+      resolve();
+    });
+  });
+}
+
 // GET ONE USER
 function getUsersInRoom(roomName) {
   console.log(roomName);
@@ -73,10 +86,26 @@ function getUsersInRoom(roomName) {
   });
 }
 
+// // DELETE ALL CLIENT USERS
+function deleteUsers(clientID) {
+  const sql = "DELETE from users where id = ?";
+  return new Promise((resolve, reject) => {
+    db.run(sql, [clientID], (error) => {
+      if (error) {
+        console.error(error.message);
+        reject(error);
+      }
+      resolve();
+    });
+  });
+}
+
 module.exports = {
   addUser,
   getUsers,
   getOneUser,
+  deleteUsers,
   updateActiveRoom,
   getUsersInRoom,
+  removeActiveRoom,
 };

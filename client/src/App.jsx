@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { GiDogHouse } from "react-icons/gi";
 import { FaUserAstronaut } from "react-icons/fa";
-import { BsChatFill } from "react-icons/bs";
 import { IoAddOutline } from "react-icons/io5";
 import { MdSend } from "react-icons/md";
 
@@ -17,11 +16,9 @@ import {
   Text,
   useDisclosure,
   Image,
-  Collapse,
   Grid,
   GridItem,
   InputGroup,
-  InputLeftElement,
   InputRightElement,
   Textarea,
   CloseButton,
@@ -43,6 +40,8 @@ function App() {
   const [message, setMessage] = useState("");
 
   const [clientID, setClientID] = useState("");
+
+  const [username, setUsername] = useState("");
   const [users, setUsers] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
 
@@ -72,7 +71,7 @@ function App() {
       setUsers(data.users);
     });
 
-    socket.on("getUsers", (data) => {
+    socket.on("get_users", (data) => {
       setUsers(data);
     });
 
@@ -81,7 +80,6 @@ function App() {
     });
 
     socket.on("active_users", (users) => {
-      console.log(users);
       setActiveUsers(users);
     });
 
@@ -96,22 +94,21 @@ function App() {
     });
 
     socket.on("registered", (user) => {
-      console.log(user);
       setClientID(user.user_id);
       setUsername(user.username);
     });
 
-    socket.on("errorMessage", (error) => {
+    socket.on("error_message", (error) => {
       setErrorMessage(error);
     });
 
-    socket.on("sentMessage", (data) => {
+    socket.on("sent_message", (data) => {
       setMessages(data);
     });
 
-    socket.on("isTyping", (data) => {
-      console.log(data);
-      setTyping(data);
+    socket.on("is_typing", ({ typingState, username }) => {
+      if (typingState) setTyping(`${username} is typing...`);
+      if (!typingState) setTyping("");
     });
 
     socket.on("disconnect", () => {
@@ -126,7 +123,7 @@ function App() {
   }, []);
 
   const handleMessage = (message) => {
-    socket.emit("chatMessage", {
+    socket.emit("chat_message", {
       message,
       clientID,
       username,
@@ -136,18 +133,6 @@ function App() {
     });
     setTyping("");
   };
-
-  // Vässa
-  const handleTyping = () => {
-    if (message.length)
-      socket.emit("isTyping", { typing: true, user: username });
-
-    if (!message.length) {
-      socket.emit("isTyping", { typing: false, user: username });
-    }
-  };
-
-  const [username, setUsername] = useState("");
 
   const handleUser = (username) => {
     setClientID(username);
@@ -159,16 +144,23 @@ function App() {
     socket.emit("register", username);
   };
 
-  const handleDelete = (roomName) => {
-    socket.emit("delete_room", roomName);
-  };
-
   const joinRoom = (roomName) => {
     socket.emit("join_room", { roomName, username });
   };
-  // const handleLeave = (username) => {
-  //   setUsername("");
-  // };
+
+  const deleteRoom = (roomName) => {
+    // Deletes all users under the same socket.id
+    socket.emit("delete_room", roomName);
+  };
+
+  const deleteUser = (clientID) => {
+    socket.emit("delete_users", clientID);
+  };
+
+  // Vässa
+  const handleTyping = (typingState) => {
+    socket.emit("handle_typing", { typingState, username, room });
+  };
 
   return (
     <div className="App">
@@ -196,11 +188,11 @@ function App() {
                 <Text color="white">{errorMessage}</Text>
                 <Button
                   colorScheme="purple"
-                  // alignSelf="flex-start"
+                  onClick={() => deleteUser(clientID)}
                   width="min-content"
                   size="sm"
                 >
-                  Leave chatroom
+                  Leave chat
                 </Button>
               </Flex>
             </Flex>
@@ -305,7 +297,7 @@ function App() {
                       color="white"
                       alignItems="center"
                       justifyContent="space-between"
-                      key={room.room_id}
+                      key={roomItem.id}
                       bgColor={
                         room === roomItem.room_name ? "gray.700" : "black"
                       }
@@ -329,7 +321,7 @@ function App() {
                       <Box px={2}>
                         <CloseButton
                           color={room === roomItem.room_name ? "red" : "white"}
-                          onClick={() => handleDelete(roomItem.room_name)}
+                          onClick={() => deleteRoom(roomItem.room_name)}
                         />
                       </Box>
                     </Flex>
@@ -374,9 +366,7 @@ function App() {
                       overflowWrap="break-word"
                       color="white"
                     >
-                      {/* <Text>{message.room_name}</Text> */}
                       <Flex flexDir="column" alignItems="center">
-                        {/* <Text fontSize="10px">{message.user_id}</Text> */}
                         <Text color="blue.300">{message.time}</Text>
                         <Emoji text={message.message} />
                       </Flex>
@@ -406,6 +396,8 @@ function App() {
                   borderTop="5px solid #1A202C"
                 >
                   <Textarea
+                    onFocus={() => handleTyping(true)}
+                    onBlur={() => handleTyping(false)}
                     width="100%"
                     onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
@@ -423,9 +415,6 @@ function App() {
                       setMessage(e.target.value);
                     }}
                     onKeyPress={(e) => {
-                      if (e.key !== "Enter") {
-                        handleTyping();
-                      }
                       if (e.key === "Enter") {
                         handleMessage(message);
                         setMessage("");

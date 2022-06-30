@@ -11,7 +11,7 @@ function logMessages(data) {
         return console.log("Success, wrote to log.txt");
       }
     });
-  } else return console.log("Error, no data message sent");
+  } else return console.log("Error, no message data sent");
 }
 
 module.exports = logMessages;

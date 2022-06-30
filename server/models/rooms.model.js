@@ -31,12 +31,12 @@ function getRooms() {
 function deleteRoom(roomName) {
   const sql = "DELETE from rooms where room_name = ?";
   return new Promise((resolve, reject) => {
-    db.run(sql, [roomName], (error, rows) => {
+    db.run(sql, [roomName], (error) => {
       if (error) {
         console.error(error.message);
         reject(error);
       }
-      resolve(rows);
+      resolve();
     });
   });
 }
