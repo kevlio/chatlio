@@ -56,7 +56,7 @@ function getOneUser(id, username) {
   });
 }
 
-// Bättre lösning?
+// UPDATE USERS ACTIVE ROOM / BETTER SOLUTION?
 function updateActiveRoom(roomName, username) {
   const sql = "UPDATE users SET active_room = ? WHERE username = ?";
   return new Promise((resolve, reject) => {
@@ -98,7 +98,7 @@ function getUsersInRoom(roomName) {
   });
 }
 
-// DELETE ALL CLIENT USERS
+// DELETE ALL CLIENT CONNECTED USERS
 function deleteUsers(clientID) {
   const sql = "DELETE from users where id = ?";
   return new Promise((resolve, reject) => {
@@ -112,7 +112,7 @@ function deleteUsers(clientID) {
   });
 }
 
-// DELETE ALL CLIENT USERS
+// DELETE ALL USERS
 function deleteAllUsers() {
   const sql = "DELETE from users";
   return new Promise((resolve, reject) => {

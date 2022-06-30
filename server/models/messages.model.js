@@ -39,7 +39,7 @@ function getRoomMessages(roomName) {
   });
 }
 
-// // DELETE ONE ROOM
+// // DELETE ONE ROOM / REPLACED WITH CONSTRAINT, FK, DELETE CASCADE
 function deleteRoomMessages(roomName) {
   const sql = "DELETE from messages where room_name = ?";
   return new Promise((resolve, reject) => {
