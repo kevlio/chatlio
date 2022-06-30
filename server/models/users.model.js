@@ -1,7 +1,19 @@
 const db = require("../config/db");
 
 // ADD ONE USER
-function addUser(id, username) {
+async function addUser(id, username) {
+  // EXTRA CHECKER FOR UNIQUE CONSTRAINT FAILURE
+  // MOVE CHECKER LOGIC FROM HERE AND SERVER TO CONTROLLER
+  const users = await getUsers();
+  const checkUser = await users.filter((user) => {
+    return user.username === username;
+  });
+
+  if (checkUser.length !== 0) {
+    console.log("Send error message");
+    return false;
+  }
+
   const sql = "INSERT INTO users (id, username) VALUES (?, ?)";
   return new Promise((resolve, reject) => {
     db.run(sql, [id, username], (error) => {
@@ -86,11 +98,25 @@ function getUsersInRoom(roomName) {
   });
 }
 
-// // DELETE ALL CLIENT USERS
+// DELETE ALL CLIENT USERS
 function deleteUsers(clientID) {
   const sql = "DELETE from users where id = ?";
   return new Promise((resolve, reject) => {
     db.run(sql, [clientID], (error) => {
+      if (error) {
+        console.error(error.message);
+        reject(error);
+      }
+      resolve();
+    });
+  });
+}
+
+// DELETE ALL CLIENT USERS
+function deleteAllUsers() {
+  const sql = "DELETE from users";
+  return new Promise((resolve, reject) => {
+    db.run(sql, (error) => {
       if (error) {
         console.error(error.message);
         reject(error);
@@ -108,4 +134,5 @@ module.exports = {
   updateActiveRoom,
   getUsersInRoom,
   removeActiveRoom,
+  deleteAllUsers,
 };

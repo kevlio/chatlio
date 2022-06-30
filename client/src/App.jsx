@@ -15,6 +15,7 @@ import {
   Box,
   Text,
   useDisclosure,
+  Collapse,
   Image,
   Grid,
   GridItem,
@@ -39,9 +40,10 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
 
-  const [clientID, setClientID] = useState("");
-
   const [username, setUsername] = useState("");
+  const [regUsername, setRegUsername] = useState("");
+  const [regClientID, setRegClientID] = useState("");
+
   const [users, setUsers] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
 
@@ -51,9 +53,8 @@ function App() {
   const [avatar, setAvatar] = useState("");
 
   const [room, setRoom] = useState("");
+  const [regRoom, setRegRoom] = useState("");
   const [rooms, setRooms] = useState([]);
-
-  const [newRoom, setNewRoom] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -73,29 +74,39 @@ function App() {
 
     socket.on("get_users", (data) => {
       setUsers(data);
+      setErrorMessage("");
     });
 
     socket.on("joined_room", (data) => {
       setRooms(data);
+      setErrorMessage("");
     });
 
-    socket.on("active_users", (users) => {
-      setActiveUsers(users);
+    socket.on("active_users", (activeUsers) => {
+      setActiveUsers(activeUsers);
     });
 
     socket.on("deleted_room", (data) => {
       setRooms(data);
-      setRoom("");
-      setMessages([]);
+      setErrorMessage("");
     });
 
     socket.on("current_room", (data) => {
       setMessages(data);
+      setErrorMessage("");
     });
 
-    socket.on("registered", (user) => {
-      setClientID(user.user_id);
-      setUsername(user.username);
+    socket.on("registered_user", (user) => {
+      setRegClientID(user.user_id);
+      setRegUsername(user.username);
+      setUsername("");
+      setErrorMessage("");
+    });
+
+    socket.on("registered_room", (room) => {
+      setRegRoom(room.room_name);
+      setRoom("");
+      setErrorMessage("");
     });
 
     socket.on("error_message", (error) => {
@@ -104,19 +115,12 @@ function App() {
 
     socket.on("sent_message", (data) => {
       setMessages(data);
+      setErrorMessage("");
     });
 
     socket.on("is_typing", ({ typingState, username }) => {
       if (typingState) setTyping(`${username} is typing...`);
       if (!typingState) setTyping("");
-    });
-
-    socket.on("disconnect", () => {
-      setUsername("");
-      setClientID("");
-      setRooms([]);
-      setMessages([]);
-      setErrorMessage("");
     });
 
     return () => socket.off();
@@ -125,17 +129,15 @@ function App() {
   const handleMessage = (message) => {
     socket.emit("chat_message", {
       message,
-      clientID,
-      username,
+      clientID: regClientID,
+      username: regUsername,
       randomColor,
       avatar,
-      room,
+      room: regRoom,
     });
-    setTyping("");
   };
 
   const handleUser = (username) => {
-    setClientID(username);
     const random = Math.floor(Math.random() * 16777215).toString(16);
     setRandomColor(random);
     setAvatar(
@@ -145,21 +147,30 @@ function App() {
   };
 
   const joinRoom = (roomName) => {
-    socket.emit("join_room", { roomName, username });
+    socket.emit("join_room", { roomName, username: regUsername });
   };
 
   const deleteRoom = (roomName) => {
-    // Deletes all users under the same socket.id
     socket.emit("delete_room", roomName);
   };
 
-  const deleteUser = (clientID) => {
-    socket.emit("delete_users", clientID);
+  const deleteUser = (regClientID) => {
+    // Deletes all users under the same socket.id
+    socket.emit("delete_users", regClientID);
+    onToggle();
   };
 
-  // Vässa
+  const deleteAllUsers = () => {
+    socket.emit("delete_all_users");
+    onToggle();
+  };
+
   const handleTyping = (typingState) => {
-    socket.emit("handle_typing", { typingState, username, room });
+    socket.emit("handle_typing", {
+      typingState,
+      username: regUsername,
+      room: regRoom,
+    });
   };
 
   return (
@@ -181,24 +192,36 @@ function App() {
                 p={2}
               >
                 <Text fontSize="2xl" fontWeight="medium" color="white">
-                  {clientID
-                    ? `Welcome ${username}...`
-                    : "Waiting for server..."}
+                  {regClientID
+                    ? `Welcome ${regUsername}...`
+                    : "Waiting for registration..."}
                 </Text>
                 <Text color="white">{errorMessage}</Text>
-                <Button
-                  colorScheme="purple"
-                  onClick={() => deleteUser(clientID)}
-                  width="min-content"
-                  size="sm"
-                >
-                  Leave chat
-                </Button>
+                <Flex flexDir="column">
+                  <Button
+                    colorScheme="purple"
+                    onClick={() => deleteUser(regClientID)}
+                    width="200px"
+                    size="sm"
+                  >
+                    Disconnect your active users
+                  </Button>
+                  <Collapse in={isOpen}>
+                    <Button
+                      color="white"
+                      size="sm"
+                      width="200px"
+                      bg="red"
+                      onClick={() => deleteAllUsers()}
+                    >
+                      Disconnect all users
+                    </Button>
+                  </Collapse>
+                </Flex>
               </Flex>
             </Flex>
           </GridItem>
           <GridItem
-            // bg="blackAlpha.900"
             bgColor="black"
             color="white"
             rowSpan={5}
@@ -233,12 +256,17 @@ function App() {
                       variant="outline"
                       maxW="150px"
                       value={username}
-                      color={clientID ? "blue.300" : "white"}
-                      // disabled={clientID && true}
+                      color={
+                        errorMessage === "User already exist" ||
+                        errorMessage === "Please enter a username"
+                          ? "red"
+                          : "blue.300"
+                      }
+                      // disabled={regClientID && true}
                       fontSize="lg"
                       onChange={(e) => setUsername(e.target.value)}
                       onKeyPress={(e) => {
-                        // && !clientID
+                        // && !regClientID
                         if (e.key === "Enter") {
                           handleUser(username);
                         }
@@ -247,14 +275,14 @@ function App() {
                   </InputGroup>
                 </Flex>
                 {users &&
-                  users.map((client) => (
+                  users.map((user) => (
                     <Text
                       mx={6}
-                      key={client.username}
-                      color={username === client.username && "blue.300"}
-                      fontWeight={username === client.username && "bold"}
+                      key={user.username}
+                      color={regUsername === user.username && "blue.300"}
+                      fontWeight={regUsername === user.username && "bold"}
                     >
-                      {client.username}
+                      {user.username}
                     </Text>
                   ))}
               </Flex>
@@ -268,25 +296,20 @@ function App() {
                     children={<IoAddOutline />}
                     onClick={() => {
                       joinRoom(room);
-                      setNewRoom("");
-                      onToggle();
                     }}
                   />
                   <Input
                     placeholder="Add room"
                     variant="outline"
                     maxW="150px"
-                    value={newRoom}
+                    value={room}
                     fontSize="lg"
                     onChange={(e) => {
-                      setNewRoom(e.target.value);
                       setRoom(e.target.value);
                     }}
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         joinRoom(room);
-                        setNewRoom("");
-                        onToggle();
                       }
                     }}
                   />
@@ -299,7 +322,7 @@ function App() {
                       justifyContent="space-between"
                       key={roomItem.id}
                       bgColor={
-                        room === roomItem.room_name ? "gray.700" : "black"
+                        regRoom === roomItem.room_name ? "gray.700" : "black"
                       }
                     >
                       <Button
@@ -307,10 +330,10 @@ function App() {
                         width="90%"
                         onClick={() => {
                           joinRoom(roomItem.room_name);
-                          setRoom(roomItem.room_name);
+                          setRegRoom(roomItem.room_name);
                         }}
                         bgColor={
-                          room === roomItem.room_name ? "gray.700" : "black"
+                          regRoom === roomItem.room_name ? "gray.700" : "black"
                         }
                         _hover={{
                           bg: "green.400",
@@ -320,7 +343,9 @@ function App() {
                       </Button>
                       <Box px={2}>
                         <CloseButton
-                          color={room === roomItem.room_name ? "red" : "white"}
+                          color={
+                            regRoom === roomItem.room_name ? "red" : "white"
+                          }
                           onClick={() => deleteRoom(roomItem.room_name)}
                         />
                       </Box>
@@ -336,7 +361,9 @@ function App() {
                   activeUsers.map((user) => (
                     <Text
                       key={user.username}
-                      color={user.username === username ? "blue.300" : "white"}
+                      color={
+                        user.username === regUsername ? "blue.300" : "white"
+                      }
                     >
                       {user.username}
                     </Text>
@@ -362,12 +389,16 @@ function App() {
                       bgColor={`#${message.randomColor}`}
                       bgGradient="revert"
                       borderRadius={6}
-                      p={1}
+                      py={1}
+                      pl={4}
+                      pr={2}
                       overflowWrap="break-word"
                       color="white"
                     >
                       <Flex flexDir="column" alignItems="center">
-                        <Text color="blue.300">{message.time}</Text>
+                        <Text color="blue.300" alignSelf="flex-start">
+                          {message.time}
+                        </Text>
                         <Emoji text={message.message} />
                       </Flex>
                       <Flex gap={2} alignItems="center">

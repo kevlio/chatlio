@@ -15,19 +15,11 @@ För att uppnå Väl Godkänt är kraven att behöver du implementera minst 3 av
 CHECK ● Klienten ska visa alla användare som är aktiva i chatten/rummet
 CHECK ● När någon skriver ska det finnas någon form av indikator att någon håller på att skriva ett meddelande (ex. “... skriver just nu”)
 CHECK ● Det ska finnas stöd för att skicka emojis i meddelanden
-
+---------------------------------------------------------------
+Om tid finns:
 ● Det ska finnas stöd för att skicka direktmeddelande till andra användare
 ● Det ska finnas stöd för att skapa ett låst rum som kräver lösenord
 ● Man ska inte kunna ta bort ett lösenordsskyddat rum utan lösenordet
-
-Nice to have:
-CHECK Users renderings opt
-CHECK EMOJIS
-Dela upp frontend i komponenter
-Städa kod
-Ev. utveckla felhantering, undvika serverkrascher - utnyttja felmeddelande
-Ta bort onödiga paket
-DELETE ROOM TA BORT FRÅN SOCKETS ROOMS
-Bättra på typing...
-Rensa console logs
-Feltesta
+● Dela upp frontend i komponenter
+● Ev. utveckla felhantering, undvika serverkrascher - utnyttja felmeddelande. 
+--- Vissa problem med UNIQUE CONSTRAINT vid stresstest trots checkers, varför?
